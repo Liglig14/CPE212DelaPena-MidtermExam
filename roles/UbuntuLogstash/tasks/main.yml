@@ -1,0 +1,15 @@
+---
+- name: Update APT repository
+  apt:
+    update_cache: yes
+
+- name: Install Logstash
+  apt:
+    name: logstash
+    state: present
+
+- name: Enable and start Logstash service
+  systemd:
+    name: logstash
+    enabled: yes
+    state: started

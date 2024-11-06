@@ -1,0 +1,25 @@
+---
+- name: Add Kibana APT Repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    filename: "artifacts_elastic_co_packages_8_x_apt.list"
+
+- name: Install kibana package
+  ansible.builtin.apt:
+    name: kibana
+    state: present
+
+- name: Ensure the kibana configuration directory exists
+  ansible.builtin.file:
+    path: /etc/kibana
+    state: directory
+    owner: kibana
+    group: kibana
+    mode: '0755'
+
+- name: Enable and start kibana service
+  ansible.builtin.service:
+    name: kibana
+    state: started
+    enabled: yes

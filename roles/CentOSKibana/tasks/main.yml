@@ -1,0 +1,34 @@
+---
+    - name: Install prerequisites
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - wget
+        - yum-utils
+        - epel-release
+
+    - name: Add Elastic GPG key
+      rpm_key:
+        state: present
+        key: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+
+    - name: Install Kibana
+      yum:
+        name: kibana
+        state: latest
+
+    - name: Configure Kibana
+      lineinfile:
+        path: /etc/kibana/kibana.yml
+        regexp: '^{{ item.key }}:'
+        line: '{{ item.key }}: {{ item.value }}'
+      loop:
+        - { key: 'server.host', value: '0.0.0.0' }  # Allow external connections
+        - { key: 'elasticsearch.hosts', value: 'http://localhost:9200' }  # Update if necessary
+
+    - name: Enable and start Kibana service
+      systemd:
+        name: kibana
+        enabled: yes
+        state: started

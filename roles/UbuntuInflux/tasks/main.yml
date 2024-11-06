@@ -1,0 +1,11 @@
+---
+    - name: Install InfluxDB
+      apt:
+        name: influxdb
+        state: latest
+
+    - name: Enable and start InfluxDB service
+      systemd:
+        name: influxdb
+        enabled: yes
+        state: started

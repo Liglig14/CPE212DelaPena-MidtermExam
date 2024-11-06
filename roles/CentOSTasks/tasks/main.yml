@@ -1,0 +1,50 @@
+---
+    - name: Install Java (if not installed)
+      yum:
+        name: java-11-openjdk-devel
+        state: present
+
+    - name: Install necessary packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - curl
+        - gnupg2
+        - jq
+
+    - name: Import Elasticsearch GPG Key
+      command: >
+        rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+    - name: Add Elasticsearch YUM Repository
+      copy:
+        dest: /etc/yum.repos.d/elasticsearch.repo
+        content: |
+          [elasticsearch-8.x]
+          name=Elasticsearch repository for 8.x packages
+          baseurl=https://artifacts.elastic.co/packages/8.x/yum
+          gpgcheck=1
+          gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+          enabled=1
+          autopurge=1
+
+    - name: Install Elasticsearch package
+      yum:
+        name: elasticsearch
+        state: present
+
+    - name: Update Elasticsearch Configuration File
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - { regexp: '^network\\.host:', line: 'network.host: {{ inventory_hostname }}' }
+        - { regexp: '^http\\.port:', line: 'http.port: {{ elasticsearch.http_port }}' }
+
+    - name: Enable and start Elasticsearch service
+      service:
+        name: elasticsearch
+        state: started
+        enabled: yes
